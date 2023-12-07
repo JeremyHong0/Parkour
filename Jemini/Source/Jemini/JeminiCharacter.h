@@ -37,8 +37,12 @@ class AJeminiCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement)
+	class UCustomCharacterMovementComponent* CustomCharacterMovementComponent;
+
 public:
-	AJeminiCharacter();
+	AJeminiCharacter(const FObjectInitializer& ObjectInitializer);
 	
 
 protected:
@@ -62,5 +66,7 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	
+	FCollisionQueryParams GetIgnoreCharacterParams() const;
 };
 
