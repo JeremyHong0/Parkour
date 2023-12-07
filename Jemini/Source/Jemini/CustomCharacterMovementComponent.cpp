@@ -16,10 +16,17 @@ void UCustomCharacterMovementComponent::InitializeComponent()
 
 float UCustomCharacterMovementComponent::GetMaxSpeed() const
 {
+	if(IsMovementMode(MOVE_Walking) && bWantsToSprint)
+		return MaxSprintSpeed;
+	
 	if(MovementMode != MOVE_Custom)
 		return Super::GetMaxSpeed();
-		
-	return MaxClimbSpeed;
+
+	if(CustomMovementMode == CMOVE_Climb)
+		return MaxClimbSpeed;
+
+	UE_LOG(LogTemp, Fatal, TEXT("Invalid Movement Mode"))
+	return -1.f;
 }
 
 float UCustomCharacterMovementComponent::GetMaxBrakingDeceleration() const
@@ -166,6 +173,16 @@ void UCustomCharacterMovementComponent::ClimbPressed()
 void UCustomCharacterMovementComponent::ClimbReleased()
 {
 	bWantsToClimb = false;
+}
+
+void UCustomCharacterMovementComponent::SprintPressed()
+{
+	bWantsToSprint = true;
+}
+
+void UCustomCharacterMovementComponent::SprintReleased()
+{
+	bWantsToSprint = false;
 }
 
 bool UCustomCharacterMovementComponent::IsCustomMovementMode(ECustomMovementMode InCustomMovementMode) const

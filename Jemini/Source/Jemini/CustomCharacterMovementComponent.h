@@ -36,11 +36,14 @@ class JEMINI_API UCustomCharacterMovementComponent : public UCharacterMovementCo
 	float BrakingDecelerationClimbing = 1000.f;
 	UPROPERTY(EditDefaultsOnly)
 	float ClimbReachDistance = 200.f;
+	UPROPERTY(EditDefaultsOnly)
+	float MaxSprintSpeed = 600.f;
 
 	UPROPERTY(Transient)
 	AJeminiCharacter* MyCharacterOwner;
 
 	bool bWantsToClimb;
+	bool bWantsToSprint;
 
 public:
 	UCustomCharacterMovementComponent();
@@ -68,6 +71,11 @@ public:
 	void ClimbPressed();
 	UFUNCTION(BlueprintCallable)
 	void ClimbReleased();
+
+	UFUNCTION(BlueprintCallable)
+	void SprintPressed();
+	UFUNCTION(BlueprintCallable)
+	void SprintReleased();
 
 	UFUNCTION(BlueprintPure)
 	bool IsCustomMovementMode(ECustomMovementMode InCustomMovementMode) const;
