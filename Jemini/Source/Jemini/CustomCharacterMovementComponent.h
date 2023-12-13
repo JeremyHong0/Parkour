@@ -71,7 +71,7 @@ public:
 	void ClimbPressed();
 	UFUNCTION(BlueprintCallable)
 	void ClimbReleased();
-
+	
 	UFUNCTION(BlueprintCallable)
 	void SprintPressed();
 	UFUNCTION(BlueprintCallable)
