@@ -120,7 +120,7 @@ void UCustomCharacterMovementComponent::PhysClimb(float deltaTime, int32 Iterati
 	{
 		return;
 	}
-	if (!CharacterOwner || (!CharacterOwner->Controller && !bRunPhysicsWithNoController && !HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity() && (CharacterOwner->GetLocalRole() != ROLE_SimulatedProxy)))
+	if (!CharacterOwner || (!CharacterOwner->Controller && !bRunPhysicsWithNoController && !HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity()))
 	{
 		Acceleration = FVector::ZeroVector;
 		Velocity = FVector::ZeroVector;
@@ -133,7 +133,7 @@ void UCustomCharacterMovementComponent::PhysClimb(float deltaTime, int32 Iterati
 	const FVector OldLocation = UpdatedComponent->GetComponentLocation();
 	FHitResult SurfHit, FloorHit;
 	GetWorld()->LineTraceSingleByProfile(SurfHit, OldLocation, OldLocation + UpdatedComponent->GetForwardVector() * ClimbReachDistance, "BlockAll", MyCharacterOwner->GetIgnoreCharacterParams());
-	GetWorld()->LineTraceSingleByProfile(FloorHit, OldLocation, OldLocation + FVector::DownVector * 1.2f, "BlockAll", MyCharacterOwner->GetIgnoreCharacterParams());
+	GetWorld()->LineTraceSingleByProfile(FloorHit, OldLocation, OldLocation + FVector::DownVector * 1.7f, "BlockAll", MyCharacterOwner->GetIgnoreCharacterParams());
 	if (!SurfHit.IsValidBlockingHit() || FloorHit.IsValidBlockingHit())
 	{
 		const FRotator OldRotation = CharacterOwner->GetActorRotation();
