@@ -43,7 +43,9 @@ protected:
 
 public:
 	AJeminiCharacter(const FObjectInitializer& ObjectInitializer);
-	
+
+	virtual void Jump() override;
+	virtual void StopJumping() override;
 
 protected:
 
@@ -66,6 +68,8 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	bool bPressedCustomJump;
 	
 	FCollisionQueryParams GetIgnoreCharacterParams() const;
 };
