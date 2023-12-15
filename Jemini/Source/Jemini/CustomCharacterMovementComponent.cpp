@@ -91,7 +91,68 @@ void UCustomCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float
 		bWantsToClimb = false;
 	}
 	
+	if (MyCharacterOwner->bPressedCustomJump)
+	{
+		SLOG("Trying jump")
+		if (TryMantle())
+		{
+			MyCharacterOwner->StopJumping();	
+		}
+		else
+		{
+			SLOG("Failed Mantle, Reverting to jump")
+			MyCharacterOwner->bPressedCustomJump = false;
+			CharacterOwner->bPressedJump = true;
+			CharacterOwner->CheckJumpInput(DeltaSeconds);
+			bOrientRotationToMovement = true;
+		}
+	}
+	
+	// Transition
+	if (Safe_bTransitionFinished)
+	{
+		SLOG("Transition Finished")
+		UE_LOG(LogTemp, Warning, TEXT("FINISHED RM"))
+
+		if (TransitionName == "Mantle")
+		{
+			if (IsValid(TransitionQueuedMontage))
+			{
+				SetMovementMode(MOVE_Flying);
+				CharacterOwner->PlayAnimMontage(TransitionQueuedMontage, TransitionQueuedMontageSpeed);
+				TransitionQueuedMontageSpeed = 0.f;
+				TransitionQueuedMontage = nullptr;
+			}
+			else
+			{
+				SetMovementMode(MOVE_Walking);
+			}
+		}
+		
+		TransitionName = "";
+		Safe_bTransitionFinished = false;
+	}
+	
 	Super::UpdateCharacterStateBeforeMovement(DeltaSeconds);
+}
+
+void UCustomCharacterMovementComponent::UpdateCharacterStateAfterMovement(float DeltaSeconds)
+{
+	Super::UpdateCharacterStateAfterMovement(DeltaSeconds);
+	
+	if (!HasAnimRootMotion() && Safe_bHadAnimRootMotion && IsMovementMode(MOVE_Flying))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Ending Anim Root Motion"))
+		SetMovementMode(MOVE_Walking);
+	}
+
+	if (GetRootMotionSourceByID(TransitionRMS_ID) && GetRootMotionSourceByID(TransitionRMS_ID)->Status.HasFlag(ERootMotionSourceStatusFlags::Finished))
+	{
+		RemoveRootMotionSourceByID(TransitionRMS_ID);
+		Safe_bTransitionFinished = true;
+	}
+	
+	Safe_bHadAnimRootMotion = HasAnimRootMotion();
 }
 
 void UCustomCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations)

@@ -56,6 +56,21 @@ AJeminiCharacter::AJeminiCharacter(const FObjectInitializer& ObjectInitializer)
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
+void AJeminiCharacter::Jump()
+{
+	bPressedCustomJump = true;
+
+	Super::Jump();
+	
+	bPressedJump = false;
+}
+
+void AJeminiCharacter::StopJumping()
+{
+	bPressedCustomJump = false;
+	Super::StopJumping();
+}
+
 void AJeminiCharacter::BeginPlay()
 {
 	// Call the base class  

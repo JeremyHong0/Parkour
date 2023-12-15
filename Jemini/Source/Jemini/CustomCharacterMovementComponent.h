@@ -54,6 +54,8 @@ class JEMINI_API UCustomCharacterMovementComponent : public UCharacterMovementCo
 
 	bool bWantsToClimb;
 	bool bWantsToSprint;
+	bool Safe_bTransitionFinished;
+	bool Safe_bHadAnimRootMotion;
 
 public:
 	UCustomCharacterMovementComponent();
@@ -68,6 +70,8 @@ public:
 	virtual bool DoJump(bool bReplayingMoves) override;
 	
 	virtual void UpdateCharacterStateBeforeMovement(float DeltaSeconds) override;
+	virtual void UpdateCharacterStateAfterMovement(float DeltaSeconds) override;
+
 protected:
 	virtual void PhysCustom(float deltaTime, int32 Iterations) override;
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
