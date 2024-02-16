@@ -12,7 +12,6 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
-
 //////////////////////////////////////////////////////////////////////////
 // AJeminiCharacter
 
@@ -20,6 +19,7 @@ AJeminiCharacter::AJeminiCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UCustomCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
 	CustomCharacterMovementComponent = Cast<UCustomCharacterMovementComponent>(GetCharacterMovement());
+	CustomCharacterMovementComponent->SetIsReplicated(true);
 	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -71,6 +71,11 @@ void AJeminiCharacter::StopJumping()
 	Super::StopJumping();
 }
 
+void AJeminiCharacter::AttackMelee()
+{
+	PlayAnimMontage(AttackMeleeAnim, 1.0f);
+}
+
 void AJeminiCharacter::BeginPlay()
 {
 	// Call the base class  
@@ -107,8 +112,8 @@ void AJeminiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
 		
 		//Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AJeminiCharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AJeminiCharacter::StopJumping);
 
 		//Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AJeminiCharacter::Move);
@@ -116,6 +121,8 @@ void AJeminiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AJeminiCharacter::Look);
 
+		//Attack
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AJeminiCharacter::AttackMelee);
 	}
 
 }

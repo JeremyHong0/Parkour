@@ -37,6 +37,8 @@ class AJeminiCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* AttackAction;
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement)
 	class UCustomCharacterMovementComponent* CustomCharacterMovementComponent;
@@ -47,6 +49,7 @@ public:
 	virtual void Jump() override;
 	virtual void StopJumping() override;
 
+	void AttackMelee();
 protected:
 
 	/** Called for movement input */
@@ -72,5 +75,8 @@ public:
 	bool bPressedCustomJump;
 	
 	FCollisionQueryParams GetIgnoreCharacterParams() const;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Pawn)
+	UAnimMontage* AttackMeleeAnim;
 };
 
