@@ -8,5 +8,5 @@ I've currently implemented wall climb, mantle and sprint on server-client system
 I'm planning to add combo attacks and some more gameplay(Enemy AI) stuffs.
 
 
-https://github.com/JeremyHong0/Parkour/assets/31789406/de1f4b25-de45-434b-b6dc-36562a604b18
+https://github.com/JeremyHong0/Parkour/assets/31789406/93a6f0e6-d16e-41e4-afca-3bd90b12862e
 
