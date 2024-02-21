@@ -7,7 +7,7 @@
 #include "Net/UnrealNetwork.h"
 
 // Helper Macros
-#if 1
+#if 0
 float MacroDuration = 2.f;
 #define SLOG(x) GEngine->AddOnScreenDebugMessage(-1, MacroDuration ? MacroDuration : -1.f, FColor::Yellow, x);
 #define POINT(x, c) DrawDebugPoint(GetWorld(), x, 10, c, !MacroDuration, MacroDuration);
@@ -23,7 +23,6 @@ float MacroDuration = 2.f;
 UCustomCharacterMovementComponent::FSavedMove_Jemini::FSavedMove_Jemini()
 {
 	Saved_bWantsToSprint = 0;
-	Saved_bPrevWantsToClimb = 0;
 }
 
 bool UCustomCharacterMovementComponent::FSavedMove_Jemini::CanCombineWith(const FSavedMovePtr& NewMove,
@@ -35,7 +34,10 @@ bool UCustomCharacterMovementComponent::FSavedMove_Jemini::CanCombineWith(const 
 	{
 		return false;
 	}
-	
+	if(Saved_bWantsToClimb != NewJeminiMove->Saved_bWantsToClimb)
+	{
+		return false;
+	}
 	return FSavedMove_Character::CanCombineWith(NewMove, InCharacter, MaxDelta);
 }
 
@@ -45,10 +47,10 @@ void UCustomCharacterMovementComponent::FSavedMove_Jemini::Clear()
 
 	Saved_bPressedJeminiJump = 0;
 	Saved_bWantsToSprint = 0;
+	Saved_bWantsToClimb = 0;
 
 	Saved_bHadAnimRootMotion = 0;
 	Saved_bTransitionFinished = 0;
-	Saved_bPrevWantsToClimb = 0;
 }
 
 uint8 UCustomCharacterMovementComponent::FSavedMove_Jemini::GetCompressedFlags() const
@@ -59,6 +61,8 @@ uint8 UCustomCharacterMovementComponent::FSavedMove_Jemini::GetCompressedFlags()
 		Result |= FLAG_Sprint;
 	if(Saved_bPressedJeminiJump)
 		Result |= FLAG_JumpPressed;
+	if(Saved_bWantsToClimb)
+		Result |= FLAG_Climb;
 
 	return Result;
 } 
@@ -71,7 +75,7 @@ void UCustomCharacterMovementComponent::FSavedMove_Jemini::SetMoveFor(ACharacter
 	const UCustomCharacterMovementComponent* CharacterMovement = Cast<UCustomCharacterMovementComponent>(C->GetCharacterMovement());
 
 	Saved_bWantsToSprint = CharacterMovement->bWantsToSprint;
-	Saved_bPrevWantsToClimb = CharacterMovement->bPrevWantsToClimb;
+	Saved_bWantsToClimb = CharacterMovement->bWantsToClimb;
 	Saved_bPressedJeminiJump = CharacterMovement->MyCharacterOwner->bPressedCustomJump;
 
 	Saved_bHadAnimRootMotion = CharacterMovement->bHadAnimRootMotion;
@@ -85,7 +89,7 @@ void UCustomCharacterMovementComponent::FSavedMove_Jemini::PrepMoveFor(ACharacte
 	UCustomCharacterMovementComponent* CharacterMovement = Cast<UCustomCharacterMovementComponent>(C->GetCharacterMovement());
 
 	CharacterMovement->bWantsToSprint = Saved_bWantsToSprint;
-	CharacterMovement->bPrevWantsToClimb = Saved_bPrevWantsToClimb;
+	CharacterMovement->bWantsToClimb = Saved_bWantsToClimb;
 	CharacterMovement->MyCharacterOwner->bPressedCustomJump = Saved_bPressedJeminiJump;
 
 	CharacterMovement->bHadAnimRootMotion = Saved_bHadAnimRootMotion;
@@ -186,13 +190,6 @@ void UCustomCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float
 		if(TryClimb())
 			bWantsToClimb = false;
 	}
-	else if(IsClimbing() && bWantsToClimb)
-	{
-		const FRotator OldRotation = CharacterOwner->GetActorRotation();
-		CharacterOwner->SetActorRotation(FRotator(0.f, OldRotation.Yaw, 0.f));
-		SetMovementMode(MOVE_Falling);
-		bWantsToClimb = false;
-	}
 	
 	if (MyCharacterOwner->bPressedCustomJump)
 	{
@@ -241,9 +238,7 @@ void UCustomCharacterMovementComponent::UpdateCharacterStateAfterMovement(float 
 	Super::UpdateCharacterStateAfterMovement(DeltaSeconds);
 	
 	if (!HasAnimRootMotion() && bHadAnimRootMotion && IsMovementMode(MOVE_Flying))
-	{
 		SetMovementMode(MOVE_Walking);
-	}
 
 	if (GetRootMotionSourceByID(TransitionRMS_ID) && GetRootMotionSourceByID(TransitionRMS_ID)->Status.HasFlag(ERootMotionSourceStatusFlags::Finished))
 	{
@@ -259,14 +254,13 @@ void UCustomCharacterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
 	Super::UpdateFromCompressedFlags(Flags);
 
 	bWantsToSprint = (Flags & FSavedMove_Jemini::FLAG_Sprint) != 0;
+	bWantsToClimb  = (Flags & FSavedMove_Jemini::FLAG_Climb) != 0;
 }
 
 void UCustomCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation,
 	const FVector& OldVelocity)
 {
 	Super::OnMovementUpdated(DeltaSeconds, OldLocation, OldVelocity);
-
-	bPrevWantsToClimb = bWantsToClimb;
 }
 
 void UCustomCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
@@ -276,7 +270,6 @@ void UCustomCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterat
 	if(CustomMovementMode == CMOVE_Climb)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Climb Started"));
-
 		PhysClimb(deltaTime, Iterations);
 	}
 }
@@ -447,11 +440,12 @@ bool UCustomCharacterMovementComponent::TryMantle()
 	FVector BaseLoc = UpdatedComponent->GetComponentLocation() + FVector::DownVector * CapHH();
 	FVector Fwd = UpdatedComponent->GetForwardVector().GetSafeNormal2D();
 	auto Params = MyCharacterOwner->GetIgnoreCharacterParams();
-	float MaxHeight = CapHH() * 2 + MantleReachHeight;
+	float MaxHeight = CapHH() * 2+ MantleReachHeight;
 	float CosMMWSA = FMath::Cos(FMath::DegreesToRadians(MantleMinWallSteepnessAngle));
 	float CosMMSA = FMath::Cos(FMath::DegreesToRadians(MantleMaxSurfaceAngle));
 	float CosMMAA = FMath::Cos(FMath::DegreesToRadians(MantleMaxAlignmentAngle));
 
+	
 	// Check Front Face
 	FHitResult FrontHit;
 	float CheckDistance = FMath::Clamp(Velocity | Fwd, CapR() + 30, MantleMaxDistance);
@@ -462,9 +456,7 @@ bool UCustomCharacterMovementComponent::TryMantle()
 			break;
 		FrontStart += FVector::UpVector * (2.f * CapHH() - (MaxStepHeight - 1)) / 5;
 	}
-	if (!FrontHit.IsValidBlockingHit())
-		return false;
-	
+	if (!FrontHit.IsValidBlockingHit()) return false;
 	float CosWallSteepnessAngle = FrontHit.Normal | FVector::UpVector;
 	if (FMath::Abs(CosWallSteepnessAngle) > CosMMWSA || (Fwd | -FrontHit.Normal) < CosMMAA)
 		return false;
@@ -499,8 +491,9 @@ bool UCustomCharacterMovementComponent::TryMantle()
 	FVector ClearCapLoc = SurfaceHit.Location + Fwd * CapR() + FVector::UpVector * (CapHH() + 1 + CapR() * 2 * SurfaceSin);
 	FCollisionShape CapShape = FCollisionShape::MakeCapsule(CapR(), CapHH());
 	if (GetWorld()->OverlapAnyTestByProfile(ClearCapLoc, FQuat::Identity, "BlockAll", CapShape, Params))
+	{
 		return false;
-	
+	}
 	// Mantle Selection
 	FVector ShortMantleTarget = GetMantleStartLocation(FrontHit, SurfaceHit, false);
 	FVector TallMantleTarget = GetMantleStartLocation(FrontHit, SurfaceHit, true);
@@ -551,6 +544,7 @@ bool UCustomCharacterMovementComponent::TryMantle()
 	}
 
 	return true;
+
 }
 
 FVector UCustomCharacterMovementComponent::GetMantleStartLocation(FHitResult FrontHit, FHitResult SurfaceHit,
@@ -622,12 +616,12 @@ void UCustomCharacterMovementComponent::GetLifetimeReplicatedProps(TArray<FLifet
 	DOREPLIFETIME_CONDITION(UCustomCharacterMovementComponent, Proxy_bTallMantle, COND_SkipOwner)
 }
 
-void UCustomCharacterMovementComponent::OnRep_ShortMantle()
+void UCustomCharacterMovementComponent::OnRep_ShortMantle() const
 {
 	CharacterOwner->PlayAnimMontage(ProxyShortMantleMontage);
 }
 
-void UCustomCharacterMovementComponent::OnRep_TallMantle()
+void UCustomCharacterMovementComponent::OnRep_TallMantle() const
 {
 	CharacterOwner->PlayAnimMontage(ProxyTallMantleMontage);
 }

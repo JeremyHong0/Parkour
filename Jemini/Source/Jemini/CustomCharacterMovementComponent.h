@@ -28,17 +28,17 @@ class JEMINI_API UCustomCharacterMovementComponent : public UCharacterMovementCo
 		enum CompressedFlags
 		{
 			FLAG_Sprint			= 0x10,
-			FLAG_Custom_0		= 0x20,
+			FLAG_Climb   		= 0x20,
 			FLAG_Custom_1		= 0x40,
 			FLAG_Custom_2		= 0x80,
 		};
 		
 		uint8 Saved_bPressedJeminiJump:1;
 		uint8 Saved_bWantsToSprint:1;
+		uint8 Saved_bWantsToClimb:1;
 		
 		uint8 Saved_bTransitionFinished:1;
 		uint8 Saved_bHadAnimRootMotion:1;
-		uint8 Saved_bPrevWantsToClimb:1;
 
 		virtual bool CanCombineWith(const FSavedMovePtr& NewMove, ACharacter* InCharacter, float MaxDelta) const override;
 		virtual void Clear() override;
@@ -88,11 +88,10 @@ class JEMINI_API UCustomCharacterMovementComponent : public UCharacterMovementCo
 	float TransitionQueuedMontageSpeed;
 	int TransitionRMS_ID;
 	
-	bool bWantsToClimb;
 	bool bWantsToSprint;
+	bool bWantsToClimb;
 	bool bTransitionFinished;
 	bool bHadAnimRootMotion;
-	bool bPrevWantsToClimb;
 
 	int CorrectionCount=0;
 	int TotalBitsSent=0;
@@ -161,6 +160,6 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 private:
-	UFUNCTION() void OnRep_ShortMantle();
-	UFUNCTION() void OnRep_TallMantle();
+	UFUNCTION() void OnRep_ShortMantle() const;
+	UFUNCTION() void OnRep_TallMantle() const;
 };
