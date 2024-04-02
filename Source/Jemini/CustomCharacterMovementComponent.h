@@ -12,6 +12,7 @@ enum ECustomMovementMode
 {
 	CMOVE_None			UMETA(Hidden),
 	CMOVE_Climb			UMETA(DisplayName = "Climb"),
+	CMOVE_WallRun		UMETA(DisplayName = "Wall Run"),
 	CMOVE_MAX			UMETA(Hidden),
 };
 
@@ -39,6 +40,7 @@ class JEMINI_API UCustomCharacterMovementComponent : public UCharacterMovementCo
 		
 		uint8 Saved_bTransitionFinished:1;
 		uint8 Saved_bHadAnimRootMotion:1;
+		uint8 Saved_bWallRunIsRight:1;
 
 		virtual bool CanCombineWith(const FSavedMovePtr& NewMove, ACharacter* InCharacter, float MaxDelta) const override;
 		virtual void Clear() override;
@@ -56,6 +58,13 @@ class JEMINI_API UCustomCharacterMovementComponent : public UCharacterMovementCo
 
 		virtual FSavedMovePtr AllocateNewMove() override;
 	};
+
+	UPROPERTY(EditDefaultsOnly) float MinWallRunSpeed=200.f;
+	UPROPERTY(EditDefaultsOnly) float MaxWallRunSpeed=800.f;
+	UPROPERTY(EditDefaultsOnly) float MaxVerticalWallRunSpeed=200.f;
+	UPROPERTY(EditDefaultsOnly) float WallRunPullAwayAngle=75;
+	UPROPERTY(EditDefaultsOnly) float MinWallRunHeight=50.f;
+	UPROPERTY(EditDefaultsOnly) UCurveFloat* WallRunGravityScaleCurve;
 
 	UPROPERTY(EditDefaultsOnly) float WallAttractionForce = 200.f;
 	UPROPERTY(EditDefaultsOnly) float WallJumpOffForce = 300.f;
@@ -92,6 +101,7 @@ class JEMINI_API UCustomCharacterMovementComponent : public UCharacterMovementCo
 	bool bWantsToClimb;
 	bool bTransitionFinished;
 	bool bHadAnimRootMotion;
+	bool Safe_bWallRunIsRight;
 
 	int CorrectionCount=0;
 	int TotalBitsSent=0;
@@ -137,6 +147,9 @@ private:
 	bool TryMantle();
 	FVector GetMantleStartLocation(FHitResult FrontHit, FHitResult SurfaceHit, bool bTallMantle) const;
 
+	bool TryWallRun();
+	void PhysWallRun(float deltaTime, int32 Iterations);
+
 	float CapR() const;
 	float CapHH() const;
 public:
@@ -157,6 +170,8 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	bool IsClimbing() const { return IsCustomMovementMode(CMOVE_Climb); }
+	UFUNCTION(BlueprintPure)
+	bool IsWallRunning() const { return IsCustomMovementMode(CMOVE_WallRun); }
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 private:

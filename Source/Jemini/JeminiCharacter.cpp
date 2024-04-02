@@ -122,7 +122,7 @@ void AJeminiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AJeminiCharacter::Look);
 
 		//Attack
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AJeminiCharacter::AttackMelee);
+		//EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AJeminiCharacter::AttackMelee);
 	}
 
 }
