@@ -172,6 +172,8 @@ public:
 	bool IsClimbing() const { return IsCustomMovementMode(CMOVE_Climb); }
 	UFUNCTION(BlueprintPure)
 	bool IsWallRunning() const { return IsCustomMovementMode(CMOVE_WallRun); }
+	UFUNCTION(BlueprintPure)
+	bool IsWallRunningOnRight() const { return Safe_bWallRunIsRight; }
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 private:
