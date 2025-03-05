@@ -5,11 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "AbilitySystemInterface.h"
+
 #include "JeminiCharacter.generated.h"
 
 
 UCLASS(config=Game)
-class AJeminiCharacter : public ACharacter
+class AJeminiCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -43,6 +45,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement)
 	class UCustomCharacterMovementComponent* CustomCharacterMovementComponent;
 
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override
+	{
+		return AblilitySystemComponent;
+	}
+	
 public:
 	AJeminiCharacter(const FObjectInitializer& ObjectInitializer);
 
@@ -51,6 +58,12 @@ public:
 
 	void AttackMelee();
 protected:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, category="GAS", meta = (AllowPrivateAccess = "true"))
+	class UAbilitySystemComponent* AblilitySystemComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, category="GAS", meta = (AllowPrivateAccess = "true"))
+	const class UBaseAttributeSet* BaseAttributeSet; 
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);

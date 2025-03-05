@@ -162,10 +162,10 @@ bool UCustomCharacterMovementComponent::CanAttemptJump() const
 	return Super::CanAttemptJump() || IsClimbing();
 }
 
-bool UCustomCharacterMovementComponent::DoJump(bool bReplayingMoves)
+bool UCustomCharacterMovementComponent::DoJump(bool bReplayingMoves, float DeltaTime)
 {
 	const bool bWasOnWall = IsClimbing();
-	if(Super::DoJump(bReplayingMoves))
+	if(Super::DoJump(bReplayingMoves, DeltaTime))
 	{
 		if(bWasOnWall)
 		{
