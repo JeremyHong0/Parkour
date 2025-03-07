@@ -57,6 +57,10 @@ public:
 	virtual void StopJumping() override;
 
 	void AttackMelee();
+	UFUNCTION(BlueprintCallable)
+	void SaveComboAttack();
+	UFUNCTION(BlueprintCallable)
+	void ResetCombo();
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, category="GAS", meta = (AllowPrivateAccess = "true"))
@@ -86,10 +90,14 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	bool bPressedCustomJump;
+	bool bIsAttacking=false;
+	bool bSaveAttack=false;
+	int AttackCount=0;
 	
 	FCollisionQueryParams GetIgnoreCharacterParams() const;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Pawn)
-	UAnimMontage* AttackMeleeAnim;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Input")
+	UAnimMontage* AttackMeleeMontage;
+	
 };
 

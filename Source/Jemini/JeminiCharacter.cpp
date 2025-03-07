@@ -63,9 +63,7 @@ AJeminiCharacter::AJeminiCharacter(const FObjectInitializer& ObjectInitializer)
 void AJeminiCharacter::Jump()
 {
 	bPressedCustomJump = true;
-
 	Super::Jump();
-	
 	bPressedJump = false;
 }
 
@@ -77,7 +75,65 @@ void AJeminiCharacter::StopJumping()
 
 void AJeminiCharacter::AttackMelee()
 {
-	PlayAnimMontage(AttackMeleeAnim, 1.0f);
+	if (bIsAttacking)
+	{
+		bSaveAttack = true;
+	}
+	else
+	{
+		bIsAttacking = true;
+		switch (AttackCount)
+		{
+		case 0:
+			AttackCount = 1;
+			PlayAnimMontage(AttackMeleeMontage, 1.0f);
+			break;
+		case 1:
+			AttackCount = 2;
+			PlayAnimMontage(AttackMeleeMontage, 1.0f, "ComboB");
+			break;
+		case 2:
+			AttackCount = 0;
+			PlayAnimMontage(AttackMeleeMontage, 1.0f, "ComboC");
+			break;
+		default:
+			UE_LOG(LogTemp, Fatal, TEXT("Invalid Combo"))
+		}
+	}
+}
+
+void AJeminiCharacter::SaveComboAttack()
+{
+	if (bSaveAttack)
+	{
+		bSaveAttack = false;
+
+		switch (AttackCount)
+		{
+		case 0:
+			AttackCount = 1;
+			PlayAnimMontage(AttackMeleeMontage, 1.0f);
+			break;
+		case 1:
+			AttackCount = 2;
+			PlayAnimMontage(AttackMeleeMontage, 1.0f, "ComboB");
+			break;
+		case 2:
+			AttackCount = 0;
+			PlayAnimMontage(AttackMeleeMontage, 1.0f, "ComboC");
+			break;
+		default:
+			UE_LOG(LogTemp, Fatal, TEXT("Invalid Combo"))
+		}
+	}
+}
+
+void AJeminiCharacter::ResetCombo()
+{
+	AttackCount = 0;
+	bSaveAttack = false;
+	bIsAttacking = false;
+	UE_LOG(LogTemp, Warning, TEXT("Combo Reset"));
 }
 
 void AJeminiCharacter::BeginPlay()
