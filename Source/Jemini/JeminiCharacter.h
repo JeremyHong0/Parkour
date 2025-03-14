@@ -56,11 +56,14 @@ public:
 	virtual void Jump() override;
 	virtual void StopJumping() override;
 
-	void AttackMelee();
 	UFUNCTION(BlueprintCallable)
-	void SaveComboAttack();
+	virtual void AttackMelee();
+	
 	UFUNCTION(BlueprintCallable)
-	void ResetCombo();
+	virtual void SaveComboAttack();
+	
+	UFUNCTION(BlueprintCallable)
+	virtual void ResetCombo();
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, category="GAS", meta = (AllowPrivateAccess = "true"))

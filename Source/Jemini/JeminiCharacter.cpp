@@ -54,7 +54,7 @@ AJeminiCharacter::AJeminiCharacter(const FObjectInitializer& ObjectInitializer)
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	AblilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AblilitySystemComponent"));
+	AblilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -86,6 +86,7 @@ void AJeminiCharacter::AttackMelee()
 		{
 		case 0:
 			AttackCount = 1;
+			//GetAbilitySystemComponent()->ApplyGameplayEffectToSelf()
 			PlayAnimMontage(AttackMeleeMontage, 1.0f);
 			break;
 		case 1:
@@ -187,7 +188,7 @@ void AJeminiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AJeminiCharacter::Look);
 
 		//Attack
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AJeminiCharacter::AttackMelee);
+		//EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AJeminiCharacter::AttackMelee);
 	}
 
 }
