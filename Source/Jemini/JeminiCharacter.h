@@ -6,7 +6,7 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "AbilitySystemInterface.h"
-
+#include "LushGameplayAbility.h"
 #include "JeminiCharacter.generated.h"
 
 
@@ -41,10 +41,14 @@ class AJeminiCharacter : public ACharacter, public IAbilitySystemInterface
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* AttackAction;
+
+	
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement)
 	class UCustomCharacterMovementComponent* CustomCharacterMovementComponent;
 
+		
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override
 	{
 		return AblilitySystemComponent;
@@ -57,10 +61,10 @@ public:
 	virtual void StopJumping() override;
 
 	UFUNCTION(BlueprintCallable)
-	virtual void AttackMelee();
+	virtual void AttackMelee(bool& bDoesAttackSucceed);
 	
 	UFUNCTION(BlueprintCallable)
-	virtual void SaveComboAttack();
+	virtual void SaveComboAttack(bool& bDoesAttackSucceed);
 	
 	UFUNCTION(BlueprintCallable)
 	virtual void ResetCombo();
@@ -70,8 +74,11 @@ protected:
 	class UAbilitySystemComponent* AblilitySystemComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, category="GAS", meta = (AllowPrivateAccess = "true"))
-	const class UBaseAttributeSet* BaseAttributeSet; 
+	const class UBaseAttributeSet* BaseAttributeSet;
 
+	// Default abilities for this Character. These will be removed on Character death and regiven if Character respawns.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS|Abilities")
+	TArray<TSubclassOf<class ULushGameplayAbility>> CharacterAbilities;
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
@@ -85,6 +92,9 @@ protected:
 	
 	// To add mapping context
 	virtual void BeginPlay();
+
+	// Grant abilities on the Server. The Ability Specs will be replicated to the owning client.
+	virtual void AddCharacterAbilities();
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -101,6 +111,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Input")
 	UAnimMontage* AttackMeleeMontage;
+
+	
 	
 };
 

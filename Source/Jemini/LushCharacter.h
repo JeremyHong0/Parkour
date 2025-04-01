@@ -25,8 +25,8 @@ protected:
 	
 public:
 	virtual void ResetCombo() override;
-	virtual void AttackMelee() override;
-	virtual void SaveComboAttack() override;
+	virtual void AttackMelee(bool& bDoesAttackSucceed) override;
+	virtual void SaveComboAttack(bool& bDoesAttackSucceed) override;
 	
 	
 };
@@ -36,12 +36,12 @@ inline void ALushCharacter::ResetCombo()
 	Super::ResetCombo();
 }
 
-inline void ALushCharacter::AttackMelee()
+inline void ALushCharacter::AttackMelee(bool& bDoesAttackSucceed)
 {
-	Super::AttackMelee();
+	Super::AttackMelee(bDoesAttackSucceed);
 }
 
-inline void ALushCharacter::SaveComboAttack()
+inline void ALushCharacter::SaveComboAttack(bool& bDoesAttackSucceed)
 {
-	Super::SaveComboAttack();
+	Super::SaveComboAttack(bDoesAttackSucceed);
 }

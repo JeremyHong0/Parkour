@@ -73,11 +73,12 @@ void AJeminiCharacter::StopJumping()
 	Super::StopJumping();
 }
 
-void AJeminiCharacter::AttackMelee()
+void AJeminiCharacter::AttackMelee(bool& bDoesAttackSucceed)
 {
 	if (bIsAttacking)
 	{
 		bSaveAttack = true;
+		bDoesAttackSucceed = false;
 	}
 	else
 	{
@@ -85,25 +86,30 @@ void AJeminiCharacter::AttackMelee()
 		switch (AttackCount)
 		{
 		case 0:
+			//GetAbilitySystemComponent()->TryActivateAbilityByClass();
 			AttackCount = 1;
 			//GetAbilitySystemComponent()->ApplyGameplayEffectToSelf()
 			PlayAnimMontage(AttackMeleeMontage, 1.0f);
+			bDoesAttackSucceed = true;
 			break;
 		case 1:
 			AttackCount = 2;
 			PlayAnimMontage(AttackMeleeMontage, 1.0f, "ComboB");
+			bDoesAttackSucceed = true;
 			break;
 		case 2:
 			AttackCount = 0;
 			PlayAnimMontage(AttackMeleeMontage, 1.0f, "ComboC");
+			bDoesAttackSucceed = true;
 			break;
 		default:
 			UE_LOG(LogTemp, Fatal, TEXT("Invalid Combo"))
+			bDoesAttackSucceed = false;
 		}
 	}
 }
 
-void AJeminiCharacter::SaveComboAttack()
+void AJeminiCharacter::SaveComboAttack(bool& bDoesAttackSucceed)
 {
 	if (bSaveAttack)
 	{
@@ -114,18 +120,26 @@ void AJeminiCharacter::SaveComboAttack()
 		case 0:
 			AttackCount = 1;
 			PlayAnimMontage(AttackMeleeMontage, 1.0f);
+			bDoesAttackSucceed = true;
 			break;
 		case 1:
 			AttackCount = 2;
 			PlayAnimMontage(AttackMeleeMontage, 1.0f, "ComboB");
+			bDoesAttackSucceed = true;
 			break;
 		case 2:
 			AttackCount = 0;
 			PlayAnimMontage(AttackMeleeMontage, 1.0f, "ComboC");
+			bDoesAttackSucceed = true;
 			break;
 		default:
 			UE_LOG(LogTemp, Fatal, TEXT("Invalid Combo"))
+			bDoesAttackSucceed = false;
 		}
+	}
+	else
+	{
+		bDoesAttackSucceed = false;
 	}
 }
 
@@ -154,6 +168,17 @@ void AJeminiCharacter::BeginPlay()
 	if (IsValid(AblilitySystemComponent))
 	{
 		BaseAttributeSet = AblilitySystemComponent->GetSet<UBaseAttributeSet>();
+	}
+
+	AddCharacterAbilities();
+}
+
+void AJeminiCharacter::AddCharacterAbilities()
+{
+	for (TSubclassOf<ULushGameplayAbility>& StartupAbility : CharacterAbilities)
+	{
+		AblilitySystemComponent->GiveAbility(
+			FGameplayAbilitySpec(StartupAbility));
 	}
 }
 
